@@ -168,7 +168,7 @@ export function RevealForm() {
                         <Textarea
                           {...field}
                           className="resize-none"
-                          placeholder="Pesan yang akan dirahasiakan akan muncul disini!"
+                          placeholder="Pesan rahasia akan muncul disini!"
                           readOnly
                         />
                       </FormControl>
