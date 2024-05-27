@@ -27,6 +27,7 @@ import StegCloak from "stegcloak"
 import { useState } from "react"
 import { toast } from "sonner"
 import CopyButton from "./CopyButton"
+import { Switch } from "./ui/switch"
 
 const formSchema = z.object({
   msgCover: z.string()
@@ -39,11 +40,14 @@ const formSchema = z.object({
     }, {
       message: 'Teks cover harus terdiri dari minimal 2 kata'
     }),
-  password: z.string().min(1, {
-    message: 'Kata sandi tidak boleh kosong'
-  }),
-  result: z.string()
-});
+  password: z.string(),
+  result: z.string(),
+  usingPassword: z.boolean().default(true).optional(),
+})
+  .refine((data) => data.usingPassword ? !!data.password.length : true, {
+    message: "Password tidak boleh kosong",
+    path: ["password"],
+  });
 
 export function RevealForm() {
   const [loading, setLoading] = useState(false);
@@ -67,7 +71,8 @@ export function RevealForm() {
     const promise = () => {
       return new Promise((resolve, reject) => {
         setTimeout(() => {
-          const { password, msgCover } = values;
+          let { password, msgCover } = values;
+          password = !password.length ? process.env.NEXT_PUBLIC_DEFAULT_PASSWORD as string : password;
           const stegcloak = new StegCloak(true, false);
 
           try {
@@ -125,6 +130,31 @@ export function RevealForm() {
               />
               <FormField
                 control={form.control}
+                name="usingPassword"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel>
+                        Gunakan Kata Sandi?
+                      </FormLabel>
+                      <FormDescription>
+                        Untuk perlindungan pesan yang lebih terenkripsi.
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked);
+                          if (!checked) form.clearErrors('password');
+                        }}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
                 name="password"
                 render={({ field }) => (
                   <FormItem>
@@ -136,7 +166,7 @@ export function RevealForm() {
                           type="password"
                           className="resize-none"
                           placeholder="Masukan kata sandi"
-                          disabled={loading}
+                          disabled={loading || !form.getValues('usingPassword')}
                         />
                       </FormControl>
                     </div>

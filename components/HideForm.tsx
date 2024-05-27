@@ -27,14 +27,13 @@ import StegCloak from "stegcloak"
 import { useState } from "react"
 import { toast } from "sonner"
 import CopyButton from "./CopyButton"
+import { Switch } from "./ui/switch"
 
 const formSchema = z.object({
   msgSecret: z.string().min(1, {
     message: 'Pesan rahasia tidak boleh kosong'
   }),
-  password: z.string().min(1, {
-    message: 'Kata sandi tidak boleh kosong'
-  }),
+  password: z.string(),
   msgCover: z.string()
     .min(1, {
       message: 'Teks cover tidak boleh kosong'
@@ -45,8 +44,13 @@ const formSchema = z.object({
     }, {
       message: 'Teks cover harus terdiri dari minimal 2 kata'
     }),
-  result: z.string()
-});
+  result: z.string(),
+  usingPassword: z.boolean().default(true).optional(),
+})
+  .refine((data) => data.usingPassword ? !!data.password.length : true, {
+    message: "Password tidak boleh kosong",
+    path: ["password"],
+  });
 
 export function HideForm() {
   const [loading, setLoading] = useState(false);
@@ -57,7 +61,8 @@ export function HideForm() {
       msgSecret: '',
       msgCover: '',
       password: '',
-      result: ''
+      result: '',
+      usingPassword: true
     },
   });
 
@@ -71,7 +76,8 @@ export function HideForm() {
     const promise = () => {
       return new Promise((resolve) => {
         setTimeout(() => {
-          const { msgSecret, password, msgCover } = values;
+          let { msgSecret, password, msgCover } = values;
+          password = !password.length ? process.env.NEXT_PUBLIC_DEFAULT_PASSWORD as string : password;
           const stegcloak = new StegCloak(true, false);
 
           const result = stegcloak.hide(msgSecret, password, msgCover);
@@ -125,6 +131,31 @@ export function HideForm() {
               />
               <FormField
                 control={form.control}
+                name="usingPassword"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel>
+                        Gunakan Kata Sandi?
+                      </FormLabel>
+                      <FormDescription>
+                        Untuk perlindungan pesan yang lebih terenkripsi.
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked);
+                          if (!checked) form.clearErrors('password');
+                        }}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
                 name="password"
                 render={({ field }) => (
                   <FormItem>
@@ -136,7 +167,7 @@ export function HideForm() {
                           type="password"
                           className="resize-none"
                           placeholder="Masukan kata sandi"
-                          disabled={loading}
+                          disabled={loading || !form.getValues('usingPassword')}
                         />
                       </FormControl>
                       <FormDescription className="mt-1">
