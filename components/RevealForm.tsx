@@ -42,7 +42,7 @@ const formSchema = z.object({
     }),
   password: z.string(),
   result: z.string(),
-  usingPassword: z.boolean().default(true).optional(),
+  usingPassword: z.boolean().default(false).optional(),
 })
   .refine((data) => data.usingPassword ? !!data.password.length : true, {
     message: "Password tidak boleh kosong",
@@ -57,7 +57,8 @@ export function RevealForm() {
     defaultValues: {
       msgCover: '',
       password: '',
-      result: ''
+      result: '',
+      usingPassword: false
     },
   });
 
@@ -153,27 +154,29 @@ export function RevealForm() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Kata Sandi</FormLabel>
-                    <div>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          type="password"
-                          className="resize-none"
-                          placeholder="Masukan kata sandi"
-                          disabled={loading || !form.getValues('usingPassword')}
-                        />
-                      </FormControl>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {form.getValues('usingPassword') && (
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Kata Sandi</FormLabel>
+                      <div>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="password"
+                            className="resize-none"
+                            placeholder="Masukan kata sandi"
+                            disabled={loading || !form.getValues('usingPassword')}
+                          />
+                        </FormControl>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
             <div className="space-y-2">
               <CardFooter className="flex justify-end gap-4 pb-0 px-0">

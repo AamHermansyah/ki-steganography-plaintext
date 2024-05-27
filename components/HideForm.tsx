@@ -154,30 +154,32 @@ export function HideForm() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Kata Sandi</FormLabel>
-                    <div>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          type="password"
-                          className="resize-none"
-                          placeholder="Masukan kata sandi"
-                          disabled={loading || !form.getValues('usingPassword')}
-                        />
-                      </FormControl>
-                      <FormDescription className="mt-1">
-                        Jangan lupakan kata sandinya!
-                      </FormDescription>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {form.getValues('usingPassword') && (
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Kata Sandi</FormLabel>
+                      <div>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="password"
+                            className="resize-none"
+                            placeholder="Masukan kata sandi"
+                            disabled={loading || !form.getValues('usingPassword')}
+                          />
+                        </FormControl>
+                        <FormDescription className="mt-1">
+                          Jangan lupakan kata sandinya!
+                        </FormDescription>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               <FormField
                 control={form.control}
                 name="msgCover"
